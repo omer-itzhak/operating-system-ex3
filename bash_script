@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#compile all the stuff
+make
+gcc -O3 -Wall -std=c11 message_sender.c -o sender
+gcc -O3 -Wall -std=c11 message_reader.c -o reader
+
+# Remove kernel module and insert it again
+sudo rmmod message_slot
+sudo insmod message_slot.ko
+
+# Remove device if it exists and set it up (major 235 minor 10) again with all permissions
+sudo rm -f /dev/fc2
+sudo mknod /dev/fc2 c 235 10
+sudo chmod 777 /dev/fc2
+
+# Run sender program (channel id 12)
+./sender /dev/fc2 10 "*** hello ***"
+
+# Run reader program (channel id 12)
+./reader /dev/fc2 10
